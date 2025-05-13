@@ -1,6 +1,6 @@
+import os
 import threading
 import tkinter as tk
-from tkinter import ttk
 import webbrowser
 from src.model.buscar_promocoes import buscar_promocoes
 
@@ -14,15 +14,20 @@ def janela_principal():
         input_pesquisa.delete(0, tk.END)
         
         def rodar_pesquisa():
-            df = buscar_promocoes(produto)
+            df, df_cortado = buscar_promocoes(produto)
+            
+            def acessar_link(link):
+                webbrowser.open_new(link)
+                
+            def baixar_planilha():
+                df.to_excel(f"C:\\Users\\{os.getlogin()}\\Downloads\\promo_{produto}.xlsx",index=False)
         
             for widget in frame.winfo_children()[3:]:
                 widget.destroy()
             
             row = 1
-            
-            for x in range(len(df)):
-                linha = df.iloc[x]
+            for x in range(len(df_cortado)):
+                linha = df_cortado.iloc[x]
                 
                 titulo = linha['Titulo']
                 preco = linha['Preco']
@@ -31,20 +36,18 @@ def janela_principal():
                 a = tk.Label(frame, text=f"{titulo}", font=("Arial", 12))    
                 a.grid(row=row, column=0)
                 
-                b = tk.Label(frame, text=f"{preco}", font=("Arial", 12))    
+                b = tk.Label(frame, text=f"R$ {preco},00", font=("Arial", 12))    
                 b.grid(row=row, column=1)
-                
-                def abrir_link(url=link):
-                    webbrowser.open(url)
 
-                c = tk.Label(frame, text=link, font=("Arial", 12), fg="blue", cursor="hand2")
-                c.bind("<Button-1>", lambda e: abrir_link())
+                c = tk.Label(frame, text="Acessar Link", fg="blue", cursor="hand2", font=("Arial", 12))
                 c.grid(row=row, column=2)
+                c.bind("<Button-1>", lambda e:acessar_link(link))
                 
                 row += 1
 
-        pesquisa_thread = threading.Thread(target=rodar_pesquisa)
-        pesquisa_thread.start()
+            tk.Button(frame, text="Baixar Planilha", font=("Arial", 12), command=baixar_planilha).grid(row=row, column=0, columnspan=3, pady=(20,0))
+            
+        threading.Thread(target=rodar_pesquisa).start()
         
     raiz = tk.Tk()
     raiz.title("Buscar Promoções")
@@ -62,14 +65,6 @@ def janela_principal():
     
     botao_pesquisar = tk.Button(raiz, text="Pesquisar", font=("Arial", 12))
     botao_pesquisar.grid(row=1, column=1, pady=(10,0),padx=(10,0), sticky="w")
-    
-    
-    # tabela = ttk.Treeview(raiz, columns=("Titulo", "Preco", "Link"), show="headings")
-    # tabela.heading("Titulo", text="Título")
-    # tabela.heading("Preco", text="Preço")
-    # tabela.heading("Link", text="Link")
-
-    # tabela.grid(row=2, column=0, columnspan=2, padx=20, pady=20, sticky="nsew")
 
     frame = tk.Frame(raiz)
     frame.grid(row=2, column=0, columnspan=2, pady=10, padx=20, sticky="we")

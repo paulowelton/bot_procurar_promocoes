@@ -66,8 +66,9 @@ def buscar_promocoes(produto):
     df_ordenado = df.sort_values(by='Preco')
 
     df_ordenado.to_excel("C:\\Users\\paulo.welton\\Desktop\\promo.xlsx", index=False)
+    df_cortado = df_ordenado.head(20)
     
-    return df_ordenado
+    return df_ordenado, df_cortado
 
 if __name__ == '__main__':
     buscar_promocoes('tenis')
